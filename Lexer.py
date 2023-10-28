@@ -1,26 +1,14 @@
 from Error import Error, Success
+import logging
+import logging
+logging.basicConfig()
+logger = logging.getLogger("manfred")
+
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
 NUMBERS  = "1234567890"
 
-TT_NUM    = "NUM"
-TT_ASSIGN = "ASSIGN" # 'let'
-TT_OUTPUT = "OUTPUT" # 'show'
-TT_ID     = "ID"     # Variable name, could be AVG, OPS, or made up
-TT_LPAREN = "LPAREN"
-TT_RPAREN = "RPAREN"
-TT_LBRACK = "LBRACK"
-TT_RBRACK = "RBRACK"
-TT_LANG   = "LANG"   # '<'
-TT_RANG   = "RANG"   # '>'
-TT_COMMA  = "COMMA"
-TT_DOT    = "DOT"    # '.'
-TT_EQ     = "EQ"
-TT_ADD    = "ADD"
-TT_SUB    = "SUB"
-TT_MUL    = "MUL"
-TT_DIV    = "DIV"
-TT_END    = "END"
+from Tokens import *
 
 symbol_table = {'[':TT_LBRACK,
                 ']':TT_RBRACK,
@@ -37,14 +25,23 @@ symbol_table = {'[':TT_LBRACK,
                 }
 
 class Token:
-    def __init__(self, token_type, data = ""):
+    def __init__(self, token_type, position = 0, data = ""):
         self.token_type = token_type
         self.data = data
+        self.position = position
     def __repr__(self):
         if self.data:
             return f"<{self.token_type} : {self.data}>"
         else:
             return f"<{self.token_type}>"
+    def matches(self, other_type, other_data=""):
+        if other_data:
+            return self.token_type == other_type and self.data == other_data
+        else:
+            return self.token_type == other_type
+    def matches_any(self, *args):
+        return self.token_type in args
+
 class LexRegister:
     def __init__(self, statement):
         self.position = 0
@@ -58,6 +55,8 @@ class LexRegister:
     
     def eof(self):
         return self.position >= len(self.statement)
+    def place(self):
+        return self.position
         
 class Lexer:
     def __init__(self):
@@ -68,7 +67,7 @@ class Lexer:
         
         while True:
             if self.register.eof():
-                self.tokens.append(Token(TT_END))
+                self.tokens.append(Token(TT_END, self.register.place()))
                 break
             elif self.register.current() in NUMBERS:
                 result = self.make_num()
@@ -79,7 +78,7 @@ class Lexer:
                 if type(result) is Error:
                     return result
             elif self.register.current() in symbol_table.keys():
-                self.tokens.append(Token(symbol_table[self.register.current()]))
+                self.tokens.append(Token(symbol_table[self.register.current()], self.register.place()))
                 self.register.advance()
             elif self.register.current() == " ":
                 self.register.advance()
@@ -90,6 +89,7 @@ class Lexer:
     
     def make_num(self):
         tmp = self.register.current()
+        pos = self.register.place()
         is_float = False
         while True:
             self.register.advance()
@@ -107,11 +107,15 @@ class Lexer:
                              "Unexpected '.'", self.register.position)
             else:
                 break
-        self.tokens.append(Token(TT_NUM, float(tmp)))
+        if tmp.endswith('.'):
+            return Error("SYNTAX ERROR", self.register.statement,
+                             "Float cannot end with '.'", self.register.position)
+        self.tokens.append(Token(TT_NUM, pos, float(tmp)))
         return Success()
     
     def make_string(self):
         tmp = self.register.current()
+        pos = self.register.place()
         while True:
             self.register.advance()
             if self.register.eof():
@@ -124,6 +128,10 @@ class Lexer:
             self.tokens.append(Token(TT_ASSIGN))
         elif tmp == "show":
             self.tokens.append(Token(TT_OUTPUT))
+        elif tmp == "top":
+            self.tokens.append(Token(TT_TOP))
+        elif tmp == "bot":
+            self.tokens.append(Token(TT_BOT))
         else:
-            self.tokens.append(Token(TT_ID, tmp))
+            self.tokens.append(Token(TT_ID, pos, tmp))
         return Success()
