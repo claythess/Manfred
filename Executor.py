@@ -15,38 +15,39 @@ def left_justify(text, length):
         return text + " " * (length - len(text))
     else:
         return text
-
-def gen_value(row, context, name):
-        return visit(row, context[name])
-def visit(row, node):
-    if type(node) is ValueNode:
-        if node.val_tok.matches(TT_NUM):
-            return node.val_tok.data
-        if node.val_tok.matches(TT_ID):
-            if node.val_tok.data in row.keys():
-                return row[node.val_tok.data]
+class Visitor:
+    def __init__(self, row, context):
+        self.row = row
+        self.context = context
+    def visit(self, node):
+        if type(node) is ValueNode:
+            if node.val_tok.matches(TT_NUM):
+                return node.val_tok.data
+            if node.val_tok.matches(TT_ID):
+                if node.val_tok.data in self.row.keys():
+                    return self.row[node.val_tok.data]
+                else:
+                    return self.visit(self.context[node.val_tok.data])
+        elif type(node) is BinOpNode:
+            if node.operation.matches(TT_ADD):
+                return self.visit(node.left) + self.visit(node.right)
+            if node.operation.matches(TT_SUB):
+                return self.visit(node.left) - self.visit(node.right)
+            if node.operation.matches(TT_MUL):
+                return self.visit(node.left) * self.visit(node.right)
+            if node.operation.matches(TT_DIV):
+                return self.visit(node.left) / self.visit(node.right)
+        elif type(node) is UnOpNode:
+            
+            if node.op_tok.matches(TT_RANG):
+                qualifier  = "+"
+            if node.op_tok.matches(TT_LANG):
+                qualifier  = "-"
+            if str(node.val_tok.data + qualifier) in row.keys():
+                return self.row[str(node.val_tok.data + qualifier)]
             else:
                 pass
-    elif type(node) is BinOpNode:
-        if node.operation.matches(TT_ADD):
-            return visit(row, node.left) + visit(row, node.right)
-        if node.operation.matches(TT_SUB):
-            return visit(row, node.left) - visit(row, node.right)
-        if node.operation.matches(TT_MUL):
-            return visit(row, node.left) * visit(row, node.right)
-        if node.operation.matches(TT_DIV):
-            return visit(row, node.left) / visit(row, node.right)
-    elif type(node) is UnOpNode:
-        
-        if node.op_tok.matches(TT_RANG):
-            qualifier  = "+"
-        if node.op_tok.matches(TT_LANG):
-            qualifier  = "-"
-        if str(node.val_tok.data + qualifier) in row.keys():
-            return row[str(node.val_tok.data + qualifier)]
-        else:
-            pass
-            #logger.debug(str(node.val_tok.data + qualifier))
+                #logger.debug(str(node.val_tok.data + qualifier))
 class Executor:
     def __init__(self, output_node, statement):
         self.output_node = output_node
@@ -74,7 +75,8 @@ class Executor:
                 if p.data in data.columns:
                     tmp[p.data] = r[p.data]
                 elif p.data in context.keys():
-                    tmp[p.data] = gen_value(r, context, p.data)
+                    v = Visitor(r, context)
+                    tmp[p.data] = v.visit(context[p.data])
             out_data.append(tmp)
         
         
