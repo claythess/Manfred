@@ -6,7 +6,7 @@ from Executor import Executor
 import logging
 logging.basicConfig()
 logger = logging.getLogger("manfred")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 from colorama import init; init()
 from colorama import Fore

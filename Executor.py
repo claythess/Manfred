@@ -76,7 +76,10 @@ class Executor:
                     tmp[p.data] = r[p.data]
                 elif p.data in context.keys():
                     v = Visitor(r, context)
-                    tmp[p.data] = v.visit(context[p.data])
+                    val = v.visit(context[p.data])
+                    if type(val) is float:
+                        val = round(val, 4)
+                    tmp[p.data] = val
             out_data.append(tmp)
         
         
@@ -84,8 +87,8 @@ class Executor:
         #print(out_data[0])
         key_len = []
         for key in out_data[0].keys():
-            
-            key_len.append(max([len(str(i[key])) for i in out_data]))
+            max_len = max([len(str(i[key])) for i in out_data])
+            key_len.append(max(max_len, len(key)))
             print(left_justify(key, key_len[-1]),end=" | ")
         print()
         
