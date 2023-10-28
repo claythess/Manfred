@@ -1,6 +1,7 @@
 from Error import Error, Success
 from Lexer import Lexer
 from Parser import Parser, OutputNode, AssignNode
+from Executor import Executor
 
 import logging
 logging.basicConfig()
@@ -29,7 +30,10 @@ class Environment:
         if type(out) is AssignNode:
             self.context[out.id_tok.data] = out.value_node
         if type(out) is OutputNode:
-            pass
+            executor = Executor(out, statement)
+            out = executor.execute(self.context)
+            if type(out) == Error:
+                return out
         
         return Success()
         

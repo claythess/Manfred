@@ -25,12 +25,14 @@ class AssignNode:
         return f"{self.id_tok.data} = {self.value_node}"
 
 class OutputNode:
-    def __init__(self, from_year, to_year, params, qualifier, num):
+    def __init__(self, output_type,from_year, to_year, params, qualifier, num, sort_stat):
+        self.output_type = output_type
         self.from_year = from_year
         self.to_year = to_year
         self.params = params
         self.qualifier = qualifier
         self.num = num
+        self.sort_stat = sort_stat
     def __repr__(self):
         return f"[{self.from_year.data} - {self.to_year.data}] ({self.params}) {self.qualifier} {self.num}"
 
@@ -142,6 +144,12 @@ class Parser:
                         "Unexpected token", self.register.current().position)
     
     def visit_output(self):
+        if not self.register.current().matches(TT_ID):
+            if not self.register.current().data in ("pitching", "batting"):
+                return Error("SYNTAX ERROR", self.statement,
+                             "Expected 'pitching' or 'batting'", self.register.current().position)
+        output_type = self.register.current()
+        self.register.advance()
         if not self.register.current().matches(TT_LBRACK):
             return Error("SYNTAX ERROR", self.statement, 
                          "Exected '[", self.register.current().position)
@@ -204,4 +212,9 @@ class Parser:
                         "Exected Number", self.register.current().position)    
         num = self.register.current() 
         
-        return OutputNode(from_year,to_year,params,qualifier,num)
+        self.register.advance()
+        if not self.register.current().matches(TT_ID):
+            return Error("SYNTAX ERROR", self.statement, 
+                        "Exected ID", self.register.current().position)
+        sort_stat = self.register.current()
+        return OutputNode(output_type,from_year,to_year,params,qualifier,num, sort_stat)

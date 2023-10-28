@@ -1,4 +1,4 @@
-plan.txt
+*.txt
 __pycache__/
 *.pyc
 *.pyo
