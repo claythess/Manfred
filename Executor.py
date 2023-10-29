@@ -46,7 +46,7 @@ class Visitor:
                 qualifier  = "+"
             if node.op_tok.matches(TT_LANG):
                 qualifier  = "-"
-            if str(node.val_tok.data + qualifier) in row.keys():
+            if str(node.val_tok.data + qualifier) in self.row.keys():
                 return self.row[str(node.val_tok.data + qualifier)]
             else:
                 pass
