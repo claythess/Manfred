@@ -25,7 +25,10 @@ class Visitor:
                 return node.val_tok.data
             if node.val_tok.matches(TT_ID):
                 if node.val_tok.data in self.row.keys():
-                    return self.row[node.val_tok.data]
+                    if node.val_tok.data == "Dollars":
+                        return float(str(self.row[node.val_tok.data]).strip("$"))
+                    else:    
+                        return self.row[node.val_tok.data]
                 else:
                     return self.visit(self.context[node.val_tok.data])
         elif type(node) is BinOpNode:
