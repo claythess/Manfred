@@ -11,6 +11,8 @@ logger.setLevel(logging.INFO)
 from colorama import init; init()
 from colorama import Fore
 
+import argparse
+
 class Environment:
     def __init__(self):
         self.context = {} # Dictionary of variables
@@ -38,8 +40,7 @@ class Environment:
         return Success()
         
 
-
-if __name__ == "__main__":
+def REPL():
     env = Environment()
     success = True
     while True:
@@ -60,5 +61,25 @@ if __name__ == "__main__":
         else:
             success = True
             # Output error type
-        
-        
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("Manfred",description="Meta Analysis Network, Full Reference Esoteric Database")
+    
+    parser.add_argument("-r","--repl", action="store_true", help="Open REPL Shell")
+    
+    parser.add_argument('-f', "--file", action="store", help="File ")
+    
+    args = parser.parse_args()
+    
+    if args.repl:
+        REPL()
+    
+    elif args.file:
+        env = Environment()
+        statements = open(args.file,'r').read().splitlines()
+        for s in statements:
+            result = env.evaluate_statement(s)
+            if type(result) is Error:
+                result.output()
+                break

@@ -7,6 +7,7 @@ logger = logging.getLogger("manfred")
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
 NUMBERS  = "1234567890"
+ALPHABET_SECONDARY = NUMBERS + "%"
 
 from Tokens import *
 
@@ -120,7 +121,7 @@ class Lexer:
             self.register.advance()
             if self.register.eof():
                 break
-            if self.register.current() in ALPHABET:
+            if self.register.current() in ALPHABET + ALPHABET_SECONDARY:
                 tmp += self.register.current()
             else:
                 break
