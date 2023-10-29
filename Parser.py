@@ -25,7 +25,7 @@ class AssignNode:
         return f"{self.id_tok.data} = {self.value_node}"
 
 class OutputNode:
-    def __init__(self, output_type,from_year, to_year, params, qualifier, num, sort_stat):
+    def __init__(self, output_type,from_year, to_year, params, qualifier, num, sort_stat, comp_nodes):
         self.output_type = output_type
         self.from_year = from_year
         self.to_year = to_year
@@ -33,6 +33,7 @@ class OutputNode:
         self.qualifier = qualifier
         self.num = num
         self.sort_stat = sort_stat
+        self.comp_nodes=comp_nodes
     def __repr__(self):
         return f"[{self.from_year.data} - {self.to_year.data}] ({self.params}) {self.qualifier} {self.num}"
 
@@ -57,6 +58,13 @@ class UnOpNode:
     def __repr__(self):
         return f"[{self.val_tok.data} {self.op_tok}]"
         
+class CompareNode:
+    def __init__(self, id_tok, comp_tok, value_tok):
+        self.id_tok = id_tok
+        self.comp_tok = comp_tok
+        self.value_tok = value_tok
+    def __repr__(self):
+        return f"({self.id_tok.data} {self.comp_tok} {self.value_tok.data})"
 
 class Parser:
     def __init__(self, token_list, statement):
@@ -200,6 +208,30 @@ class Parser:
         
         
         self.register.advance()
+        comp_nodes = []
+        if self.register.current().matches(TT_ID):
+            
+            while self.register.current().matches(TT_ID):
+                name_tok = self.register.current()
+                self.register.advance()
+                
+                if not self.register.current().matches_any(TT_EQ, TT_RANG, TT_LANG):
+                    return Error("SYNTAX ERROR", self.statement, 
+                            "Expected '='", self.register.current().position)
+                op_tok = self.register.current()
+                self.register.advance()
+                if not self.register.current().matches_any(TT_ID, TT_NUM):
+                    return Error("SYNTAX ERROR", self.statement, 
+                            "Expected Number or ID", self.register.current().position)
+                value_tok = self.register.current()
+                self.register.advance()
+                if not self.register.current().matches(TT_COMMA):
+                    return Error("SYNTAX ERROR", self.statement, 
+                            "Expected ','", self.register.current().position)
+                self.register.advance()
+                
+                comp_nodes.append(CompareNode(name_tok, op_tok, value_tok))
+            
         
         if not self.register.current().matches_any(TT_TOP, TT_BOT):
             return Error("SYNTAX ERROR", self.statement, 
@@ -217,4 +249,4 @@ class Parser:
             return Error("SYNTAX ERROR", self.statement, 
                         "Exected ID", self.register.current().position)
         sort_stat = self.register.current()
-        return OutputNode(output_type,from_year,to_year,params,qualifier,num, sort_stat)
+        return OutputNode(output_type,from_year,to_year,params,qualifier,num, sort_stat, comp_nodes)

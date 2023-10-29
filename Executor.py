@@ -1,6 +1,6 @@
 from Error import Error, Success
 from Tokens import *
-from Parser import ValueNode, BinOpNode, UnOpNode
+from Parser import ValueNode, BinOpNode, UnOpNode, CompareNode
 
 import logging
 logging.basicConfig()
@@ -51,6 +51,21 @@ class Visitor:
             else:
                 pass
                 #logger.debug(str(node.val_tok.data + qualifier))
+        elif type(node) is CompareNode:
+            if node.id_tok.data in self.row.keys():
+                left_value = self.row[node.id_tok.data]
+            elif node.id_tok.data in self.context.keys():
+                left_value = self.visit(self.context[node.id_tok.data])
+            
+            right_value = node.value_tok.data
+            
+            if node.comp_tok.matches(TT_RANG):
+                return left_value > right_value
+            elif node.comp_tok.matches(TT_LANG):
+                return left_value < right_value
+            elif node.comp_tok.matches(TT_EQ):
+                return left_value == right_value
+                
 class Executor:
     def __init__(self, output_node, statement):
         self.output_node = output_node
@@ -61,31 +76,47 @@ class Executor:
         if self.output_node.output_type.data == "batting":
             data=batting_stats(from_y, to_y)
         if self.output_node.output_type.data == "pitching":
-            data=pitching_stats(from_y,to_y)
+            data=pitching_stats(from_y,to_y, qual = 1)
         
         #print(data.columns)
         for p in self.output_node.params:
             if not (p.data in (data.columns) or p.data in context.keys()):
                 return Error("SYNTAX ERROR", self.statement, f"ID {p.data} does not exist", p.position)
         
+        for p in self.output_node.comp_nodes:
+            if not (p.id_tok.data in (data.columns) or p.id_tok.data in context.keys()):
+                return Error("SYNTAX ERROR", self.statement, f"ID {p.data} does not exist", p.position)
+        
+        
         if not (self.output_node.sort_stat.data in (data.columns) or self.output_node.sort_stat.data in context.keys()):
                 return Error("SYNTAX ERROR", self.statement, f"ID {self.output_node.sort_stat.data} does not exist", self.output_node.sort_stat.position)
         
+        
         out_data=[]
+        count=0
         for idx, r in data.iterrows():
             tmp = {}
+            v = Visitor(r, context)
+            if len(self.output_node.comp_nodes) > 0:
+                pass_comparisons = True
+                for comparison in self.output_node.comp_nodes:
+                    if not v.visit(comparison):
+                        pass_comparisons = False
+                        break
+                if not pass_comparisons:
+                    continue
+            count+=1
             for p in self.output_node.params:
                 if p.data in data.columns:
                     tmp[p.data] = r[p.data]
                 elif p.data in context.keys():
-                    v = Visitor(r, context)
                     val = v.visit(context[p.data])
                     if type(val) is float:
                         val = round(val, 4)
                     tmp[p.data] = val
             out_data.append(tmp)
         
-        
+        logger.debug(count)
             
         #print(out_data[0])
         key_len = []
@@ -95,10 +126,17 @@ class Executor:
             print(left_justify(key, key_len[-1]),end=" | ")
         print()
         
-        reverse = self.output_node.qualifier.matches(TT_TOP)
-        out_data.sort(key=lambda x: x[self.output_node.sort_stat.data], reverse=reverse)
         
+    
+        
+        reverse = self.output_node.qualifier.matches(TT_TOP)
+        logger.debug(out_data[0])
+        logger.debug(self.output_node.sort_stat.data)
+        out_data.sort(key=lambda x: x[self.output_node.sort_stat.data], reverse=reverse)
+        logger.debug(len(out_data))
         for i in range(int(self.output_node.num.data)):
+            if i >= len(out_data):
+                break
             stats = out_data[i]
             for k, i in zip(key_len, stats.values()):
                 print(left_justify(str(i), k), end = " | ")

@@ -6,7 +6,7 @@ from Executor import Executor
 import logging
 logging.basicConfig()
 logger = logging.getLogger("manfred")
-logger.setLevel(logging.INFO)
+
 
 from colorama import init; init()
 from colorama import Fore
@@ -70,11 +70,17 @@ if __name__ == "__main__":
     
     parser.add_argument('-f', "--file", action="store", help="File ")
     
-    args = parser.parse_args()
+    parser.add_argument('-d', "--debug", action="store_true", help="Debug Info")
     
+    
+    args = parser.parse_args()
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        
     if args.repl:
         REPL()
-    
     elif args.file:
         env = Environment()
         statements = open(args.file,'r').read().splitlines()
