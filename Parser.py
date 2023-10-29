@@ -1,5 +1,6 @@
 from Error import Error, Success
 from Tokens import *
+from copy import deepcopy
 
 import logging
 logging.basicConfig()
@@ -47,6 +48,17 @@ class BinOpNode:
         self.left = left
         self.right = right
         self.operation = operation
+    def order_operations(self):
+        if self.operation.matches_any(TT_MUL, TT_DIV):
+            if type(self.left) is BinOpNode:
+                if (self.left.operation.matches_any(TT_ADD, TT_SUB)):
+                    return "left"
+                    
+            elif type(self.right) is BinOpNode:
+                if (self.right.operation.matches_any(TT_ADD, TT_SUB)):
+                    return "right"
+                    
+                
         
     def __repr__(self):
         return f"[{self.left} {self.operation} {self.right}]"
@@ -144,7 +156,22 @@ class Parser:
             
             if type(node2) is Error:
                 return node2
-            return BinOpNode(node1, node2, op)
+            out = BinOpNode(node1, node2, op)
+            op = out.order_operations()
+            
+            if op == "right":
+                # 5 * (1 + 2)  --> (5 * 1) * 2
+                
+                lnode = deepcopy(out.left)
+                r_lnode = deepcopy(out.right.left)
+                r_rnode = deepcopy(out.right.right)
+                op = deepcopy(out.operation)
+                r_op = deepcopy(out.right.operation)
+                out = BinOpNode(BinOpNode(lnode, r_lnode, op), r_rnode, r_op)
+            if op == "left":
+                logger.debug("LEFT")
+            logger.debug(out)
+            return out
                 
             
             
