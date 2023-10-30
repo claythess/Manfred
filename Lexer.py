@@ -65,7 +65,6 @@ class Lexer:
     
     def lex(self, statement):
         self.register = LexRegister(statement)
-        
         while True:
             if self.register.eof():
                 self.tokens.append(Token(TT_END, self.register.place()))
@@ -76,6 +75,10 @@ class Lexer:
                     return result
             elif self.register.current() in ALPHABET:
                 result = self.make_string()
+                if type(result) is Error:
+                    return result
+            elif self.register.current() == '"':
+                result = self.make_abs_string()
                 if type(result) is Error:
                     return result
             elif self.register.current() in symbol_table.keys():
@@ -135,4 +138,16 @@ class Lexer:
             self.tokens.append(Token(TT_BOT))
         else:
             self.tokens.append(Token(TT_ID, pos, tmp))
+        return Success()
+    def make_abs_string(self):
+        self.register.advance()
+        pos = self.register.place()
+        tmp = ""
+        while self.register.current() != '"':
+            tmp += self.register.current()
+            self.register.advance()
+            if self.register.eof():
+                return Error("SYNTAX ERROR", self.register.statement, "Unexpected eof", self.register.place())
+        self.tokens.append(Token(TT_ID, pos, tmp))
+        self.register.advance()
         return Success()

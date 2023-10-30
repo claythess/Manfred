@@ -221,7 +221,17 @@ class Parser:
             if not self.register.current().matches(TT_ID):
                 return Error("SYNTAX ERROR", self.statement, 
                             "Expected ID", self.register.current().position)
-            params.append(self.register.current())
+            
+            # Bit of a jerryrig, maybe I'll come back and add Nodes later
+            p_tmp = self.register.current()                
+            if self.register.next().matches(TT_LANG):
+                p_tmp.data+="-"
+                self.register.advance()
+            elif self.register.next().matches(TT_RANG):
+                p_tmp.data+="+"
+                self.register.advance()
+                
+            params.append(p_tmp)
             self.register.advance()
             if self.register.current().matches(TT_COMMA):
                 self.register.advance()

@@ -1,0 +1,5 @@
+let SOp = SO / PA
+let BBp = BB / PA
+let HRp = HR / PA
+let TTO = SOp + BBp + HRp
+show batting [2023] (Name, TTO, SOp, BBp, HRp) PA > 150, top 10 TTO

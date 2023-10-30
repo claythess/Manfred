@@ -1,6 +1,7 @@
 *.txt
 !BattingCommands.txt
 !PitchingCommands.txt
+!TTO.txt
 __pycache__/
 *.pyc
 *.pyo

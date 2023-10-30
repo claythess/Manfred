@@ -74,9 +74,16 @@ class Executor:
         from_y = int(self.output_node.from_year.data)
         to_y   = int(self.output_node.to_year.data)
         if self.output_node.output_type.data == "batting":
+            data=batting_stats(from_y, to_y, qual = 1)
+        elif self.output_node.output_type.data == "qbatting":
             data=batting_stats(from_y, to_y)
-        if self.output_node.output_type.data == "pitching":
+        elif self.output_node.output_type.data == "pitching":
             data=pitching_stats(from_y,to_y, qual = 1)
+        elif self.output_node.output_type.data == "qpitching":
+            data=pitching_stats(from_y,to_y)
+        else:
+            return Error("SYNTAX ERROR",self.statement, f"Unrecognized output type {self.output_node.output_type.data}",self.output_node.output_type.position)
+        
         
         #print(data.columns)
         for p in self.output_node.params:
@@ -139,6 +146,8 @@ class Executor:
                 break
             stats = out_data[i]
             for k, i in zip(key_len, stats.values()):
+                if type(i) is float:
+                    i = round(i, 4)
                 print(left_justify(str(i), k), end = " | ")
             print()
             

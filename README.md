@@ -11,6 +11,7 @@ let other_stat = (OBP - AVG) * BB
 # Outputting stats
 show [year] (PARAM1, PARAM2) top 10 PARAM_TO_SORT_BY
 show [from_year, to_year] (PARAM1, PARAM2, NEW_PARAM) top 10 PARAM_TO_SORT_BY
+show [year] (PARAM1, PARAM2, PARAM3) PARAM2 < 5, PARAM3 = VALUE, top 10 PARAM
 
 # E.g.
 let esoteric_pitching = IP - (HR * 13) - (BB * 3) + (SO * 5)
