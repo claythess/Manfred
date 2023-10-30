@@ -24,6 +24,10 @@ let other_stat = (OBP - AVG) * BB
 
 let yet_another_stat = other_stat * ISO
 ```
+You can put variable names in quotations, to save Absolute strings. This helps with stats like ERA+, or HR/FB%+, which otherwise contain math tokens
+```
+let some_stat = "K%+" + "BB%+"
+```
 ## Outputting stats
 ```
 show output_type [year] (PARAM1, PARAM2) top 10 PARAM_TO_SORT_BY
