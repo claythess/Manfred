@@ -32,7 +32,7 @@ Where output_type is pitching, batting, qpitching (qualified pitchers), or qbatt
 ```
 show output_type [from_year, to_year] (PARAM1, PARAM2, NEW_PARAM) top 10 PARAM_TO_SORT_BY
 
-showoutput_type [year] (PARAM1, PARAM2, PARAM3) PARAM2 < 5, PARAM3 = VALUE, top 10 PARAM
+show output_type [year] (PARAM1, PARAM2, PARAM3) PARAM2 < 5, PARAM3 = VALUE, top 10 PARAM
 ```
 PARAM3 here can compare any attribute to be less than, greater than, or equal to a value. These can be chained together by seperating conditions with a comma
 
