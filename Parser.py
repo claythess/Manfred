@@ -44,11 +44,13 @@ class ValueNode:
     def __repr__(self):
         return f"{self.val_tok.data}"
 class BinOpNode:
-    def __init__(self, left, right, operation):
+    def __init__(self, left, right, operation, paren):
         self.left = left
         self.right = right
         self.operation = operation
+        self.paren = paren
     def order_operations(self):
+        '''
         if self.operation.matches_any(TT_MUL, TT_DIV):
             if type(self.left) is BinOpNode:
                 if (self.left.operation.matches_any(TT_ADD, TT_SUB)):
@@ -57,8 +59,15 @@ class BinOpNode:
             elif type(self.right) is BinOpNode:
                 if (self.right.operation.matches_any(TT_ADD, TT_SUB)):
                     return "right"
-                    
-                
+        '''
+        if self.operation.matches_any(TT_MUL, TT_DIV):
+            if type(self.right) is BinOpNode:
+                if self.paren >= self.right.paren:
+                    return "rotate"            
+        if self.operation.matches_any(TT_ADD, TT_SUB):
+            if type(self.right) is BinOpNode:
+                if (self.right.operation.matches_any(TT_ADD, TT_SUB) and self.paren >= self.right.paren):
+                        return "rotate"
         
     def __repr__(self):
         return f"[{self.left} {self.operation} {self.right}]"
@@ -87,6 +96,11 @@ class Parser:
         if self.register.current().matches(TT_ASSIGN):
             self.register.advance()
             out = self.visit_assign()
+            if type(out) is AssignNode:
+                if type(out.value_node) is BinOpNode:
+                    logger.debug("FIX BINOP")
+                    tmp = self.pemdas(out.value_node)
+                    out.value_node = tmp
             return out
         elif self.register.current().matches(TT_OUTPUT):
             self.register.advance()
@@ -114,13 +128,13 @@ class Parser:
         
         return AssignNode(id_tok, expr)
     
-    def visit_expr(self):
+    def visit_expr(self, paren = 0):
         if self.register.current().matches(TT_END):
             return Error("PARSER ERROR", self.statement, "Unexpected end of statement", self.register.current().position)
         if self.register.current().matches(TT_LPAREN):
             logger.debug("Create Parentheses")
             self.register.advance()
-            out = self.visit_expr()
+            out = self.visit_expr(paren = paren + 1)
             
             if type(out) is Error:
                 return out
@@ -156,27 +170,60 @@ class Parser:
             
             if type(node2) is Error:
                 return node2
-            out = BinOpNode(node1, node2, op)
-            op = out.order_operations()
+            out = BinOpNode(node1, node2, op, paren)
             
-            if op == "right":
-                # 5 * (1 + 2)  --> (5 * 1) * 2
-                
-                lnode = deepcopy(out.left)
-                r_lnode = deepcopy(out.right.left)
-                r_rnode = deepcopy(out.right.right)
-                op = deepcopy(out.operation)
-                r_op = deepcopy(out.right.operation)
-                out = BinOpNode(BinOpNode(lnode, r_lnode, op), r_rnode, r_op)
-            if op == "left":
-                logger.debug("LEFT")
-            logger.debug(out)
             return out
                 
             
             
         return Error("SYNTAX ERROR", self.statement,
                         "Unexpected token", self.register.current().position)
+    def pemdas(self, node):
+        '''
+        Recursively rotate nodes to implement pemdas
+        still fiddly, but mostly works
+        TODO
+        fix let x = (1 * 2) + 3 / 4 - 5
+        '''
+        
+        if type(node.right) is BinOpNode:
+            node.right = self.pemdas(node.right)
+        if type(node.left) is BinOpNode:
+            node.left = self.pemdas(node.left)
+        
+        
+        #logger.debug("L -> " +  node.left.__repr__())
+        #logger.debug("R -> "+  node.right.__repr__())
+        op = node.order_operations()
+        
+        out = node
+            
+        while op == "rotate":
+            # 5 * [1 + 2]  --> [5 * 1] + 2
+            
+            #logger.debug("Before -> " + node.__repr__())
+            #logger.debug("Rotate")
+            #logger.debug(out.right)
+            lnode = deepcopy(node.left)
+            r_lnode = deepcopy(node.right.left)
+            r_rnode = deepcopy(node.right.right)
+            #logger.debug("L -> " + lnode.__repr__())
+            #logger.debug("RL -> " + r_lnode.__repr__())
+            #logger.debug("RR -> " + r_rnode.__repr__())
+            op = deepcopy(node.operation)
+            r_op = deepcopy(node.right.operation)
+            #logger.debug("OP -> " + op.__repr__())
+            #logger.debug("ROP -> " + r_op.__repr__())
+            out = BinOpNode(BinOpNode(lnode, r_lnode, op, node.right.paren), r_rnode, r_op, node.paren)
+            if type(out.right) is BinOpNode:
+                out.right = self.pemdas(out.right)
+            if type(out.left) is BinOpNode:
+                out.left = self.pemdas(out.left)
+            op = out.order_operations()
+            if op == "rotate":
+                logger.debug("REROTATE")
+        #logger.debug(out)
+        return out
     
     def visit_output(self):
         if not self.register.current().matches(TT_ID):

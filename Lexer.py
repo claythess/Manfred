@@ -129,13 +129,13 @@ class Lexer:
             else:
                 break
         if tmp == "let":
-            self.tokens.append(Token(TT_ASSIGN))
+            self.tokens.append(Token(TT_ASSIGN, pos))
         elif tmp == "show":
-            self.tokens.append(Token(TT_OUTPUT))
+            self.tokens.append(Token(TT_OUTPUT, pos))
         elif tmp == "top":
-            self.tokens.append(Token(TT_TOP))
+            self.tokens.append(Token(TT_TOP, pos))
         elif tmp == "bot":
-            self.tokens.append(Token(TT_BOT))
+            self.tokens.append(Token(TT_BOT, pos))
         else:
             self.tokens.append(Token(TT_ID, pos, tmp))
         return Success()
