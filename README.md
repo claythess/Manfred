@@ -32,7 +32,8 @@ let some_stat = "K%+" + "BB%+"
 ```
 show output_type [year] (PARAM1, PARAM2) top 10 PARAM_TO_SORT_BY
 ```
-Where output_type is pitching, batting, qpitching (qualified pitchers), or qbatting (quallified batters)
+Where output_type is pitching, batting, qpitching (qualified pitchers), qbatting (quallified batters), apitching (aggregate all years pitching), abatting (aggregate all years batting)
+
 ```
 show output_type [from_year, to_year] (PARAM1, PARAM2, NEW_PARAM) top 10 PARAM_TO_SORT_BY
 

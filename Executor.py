@@ -77,10 +77,14 @@ class Executor:
             data=batting_stats(from_y, to_y, qual = 1)
         elif self.output_node.output_type.data == "qbatting":
             data=batting_stats(from_y, to_y)
+        elif self.output_node.output_type.data == "abatting":
+            data=batting_stats(from_y, to_y, ind = 0)
         elif self.output_node.output_type.data == "pitching":
             data=pitching_stats(from_y,to_y, qual = 1)
         elif self.output_node.output_type.data == "qpitching":
             data=pitching_stats(from_y,to_y)
+        elif self.output_node.output_type.data == "apitching":
+            data=pitching_stats(from_y,to_y, ind = 0)
         else:
             return Error("SYNTAX ERROR",self.statement, f"Unrecognized output type {self.output_node.output_type.data}",self.output_node.output_type.position)
         
@@ -128,10 +132,17 @@ class Executor:
         #print(out_data[0])
         key_len = []
         for key in out_data[0].keys():
-            max_len = max([len(str(i[key])) for i in out_data])
+            max_len = 0
+            for i in out_data:
+                j = i[key]
+                if type(j) is float:
+                    j = round(j, 4)
+                max_len = max(max_len, len(str(j)))
+                
             key_len.append(max(max_len, len(key)))
             print(left_justify(key, key_len[-1]),end=" | ")
         print()
+        logger.debug(key_len)
         
         
     

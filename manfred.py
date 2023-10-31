@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from Error import Error, Success
 from Lexer import Lexer
 from Parser import Parser, OutputNode, AssignNode
