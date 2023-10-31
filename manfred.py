@@ -13,6 +13,7 @@ logger = logging.getLogger("manfred")
 from colorama import init; init()
 from colorama import Fore
 
+
 import argparse
 
 class Environment:
@@ -20,6 +21,9 @@ class Environment:
         self.context = {} # Dictionary of variables
     
     def evaluate_statement(self, statement):
+        # Jerry Rig Comments
+        if statement.startswith('#') or len(statement.strip()) == 0:
+            return Success()
         lex = Lexer()
         out = lex.lex(statement)
         logger.debug(lex.tokens)

@@ -142,6 +142,9 @@ class Executor:
             key_len.append(max(max_len, len(key)))
             print(left_justify(key, key_len[-1]),end=" | ")
         print()
+        for i in range(len(out_data[0].keys())):
+            print("-" * key_len[i],end="-|-")
+        print()
         logger.debug(key_len)
         
         
