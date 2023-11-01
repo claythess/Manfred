@@ -18,3 +18,15 @@ TT_SUB    = "SUB"
 TT_MUL    = "MUL"
 TT_DIV    = "DIV"
 TT_END    = "END"
+
+# List of built in variable names
+BUILT_IN_FUNCTIONS = {
+    "basic": {
+        "batting": ["HR", "AVG", "OBP", "SLG", "OPS"],
+        "pitching":["IP", "ERA", "SO", "G", "W", "L", "ERA"]
+    },
+    "statcast" : {
+        "batting":["wRC+","wSB", "HR/FB%+", "xwOBA", "HardHit%", "BABIP+"],
+        "pitching":["FIP","ERA-", "xFIP", "SIERA", "HR/FB%+", "Location+"]
+    }
+}

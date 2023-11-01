@@ -1,6 +1,7 @@
 from Error import Error, Success
 from Tokens import *
 from Parser import ValueNode, BinOpNode, UnOpNode, CompareNode
+from Lexer import Token
 
 import logging
 logging.basicConfig()
@@ -10,11 +11,14 @@ from pybaseball import pitching_stats, batting_stats
 from pybaseball import cache
 cache.enable()
 
+
+
 def left_justify(text, length):
     if len(text) < length:
         return text + " " * (length - len(text))
     else:
         return text
+
 class Visitor:
     def __init__(self, row, context):
         self.row = row
@@ -70,6 +74,7 @@ class Executor:
     def __init__(self, output_node, statement):
         self.output_node = output_node
         self.statement = statement
+    
     def execute(self, context):
         from_y = int(self.output_node.from_year.data)
         to_y   = int(self.output_node.to_year.data)
@@ -88,23 +93,41 @@ class Executor:
         else:
             return Error("SYNTAX ERROR",self.statement, f"Unrecognized output type {self.output_node.output_type.data}",self.output_node.output_type.position)
         
+    
+        p_pos = 0
+        # iterate by while loop, since size of arr is variable
+        while p_pos < len(self.output_node.params):
+            for name, values in BUILT_IN_FUNCTIONS.items():
+                if not self.output_node.params[p_pos].data == name: continue
+                old_tok = self.output_node.params.pop(p_pos)
+                if  "pitching" in self.output_node.output_type.data:
+                    new_stats = [Token(TT_ID, old_tok.position, i) for i in values["pitching"]]
+                elif  "batting" in self.output_node.output_type.data:
+                    new_stats = [Token(TT_ID, old_tok.position, i) for i in values["batting"]]
+                for i in range(len(new_stats)):
+                    self.output_node.params.insert(i + p_pos, new_stats[i])
+            p_pos += 1
+        logger.debug("Parameters")
+        logger.debug(self.output_node.params)
         
-        #print(data.columns)
+        # Check that all parametes actually exist before visiting them
         for p in self.output_node.params:
             if not (p.data in (data.columns) or p.data in context.keys()):
+                logger.debug("Syntax error " + str(p))
                 return Error("SYNTAX ERROR", self.statement, f"ID {p.data} does not exist", p.position)
+            
+                
         
         for p in self.output_node.comp_nodes:
             if not (p.id_tok.data in (data.columns) or p.id_tok.data in context.keys()):
-                return Error("SYNTAX ERROR", self.statement, f"ID {p.data} does not exist", p.position)
-        
+                return Error("SYNTAX ERROR", self.statement, f"ID {p.id_tok.data} does not exist", p.id_tok.position)
         
         if not (self.output_node.sort_stat.data in (data.columns) or self.output_node.sort_stat.data in context.keys()):
                 return Error("SYNTAX ERROR", self.statement, f"ID {self.output_node.sort_stat.data} does not exist", self.output_node.sort_stat.position)
         
-        
         out_data=[]
         count=0
+        
         for idx, r in data.iterrows():
             tmp = {}
             v = Visitor(r, context)
@@ -128,8 +151,8 @@ class Executor:
             out_data.append(tmp)
         
         logger.debug(count)
-            
-        #print(out_data[0])
+
+        # Generate lengths for each column, and output headers
         key_len = []
         for key in out_data[0].keys():
             max_len = 0
@@ -142,19 +165,19 @@ class Executor:
             key_len.append(max(max_len, len(key)))
             print(left_justify(key, key_len[-1]),end=" | ")
         print()
+
         for i in range(len(out_data[0].keys())):
             print("-" * key_len[i],end="-|-")
         print()
         logger.debug(key_len)
         
-        
-    
-        
+        # Sort Stats
         reverse = self.output_node.qualifier.matches(TT_TOP)
         logger.debug(out_data[0])
         logger.debug(self.output_node.sort_stat.data)
         out_data.sort(key=lambda x: x[self.output_node.sort_stat.data], reverse=reverse)
         logger.debug(len(out_data))
+        # Outuput Actual data
         for i in range(int(self.output_node.num.data)):
             if i >= len(out_data):
                 break
@@ -165,8 +188,6 @@ class Executor:
                 print(left_justify(str(i), k), end = " | ")
             print()
             
-                
-        
 if __name__ == "__main__":
     tmp = pitching_stats(2023,2023)
     open("PitchingCommands.txt","w").write("\n".join(tmp.columns))

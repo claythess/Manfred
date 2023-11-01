@@ -30,17 +30,23 @@ class Token:
         self.token_type = token_type
         self.data = data
         self.position = position
+    
     def __repr__(self):
+        return self.__str__()
+    def __str__(self) -> str:
         if self.data:
             return f"<{self.token_type} : {self.data}>"
         else:
             return f"<{self.token_type}>"
-    def matches(self, other_type, other_data=""):
+    
+    
+    def matches(self, other_type, other_data="") -> bool:
         if other_data:
             return self.token_type == other_type and self.data == other_data
         else:
             return self.token_type == other_type
-    def matches_any(self, *args):
+    
+    def matches_any(self, *args) -> bool:
         return self.token_type in args
 
 class LexRegister:
@@ -51,12 +57,13 @@ class LexRegister:
     def advance(self):
         self.position += 1
     
-    def current(self):
+    def current(self) -> str:
         return self.statement[self.position]
     
-    def eof(self):
+    def eof(self) -> bool:
         return self.position >= len(self.statement)
-    def place(self):
+    
+    def place(self) -> int:
         return self.position
         
 class Lexer:
@@ -139,10 +146,14 @@ class Lexer:
         else:
             self.tokens.append(Token(TT_ID, pos, tmp))
         return Success()
+
     def make_abs_string(self):
         self.register.advance()
         pos = self.register.place()
         tmp = ""
+        if self.register.eof():
+            return Error("SYNTAX ERROR", self.register.statement, "Unexpected eof", self.register.place())
+        
         while self.register.current() != '"':
             tmp += self.register.current()
             self.register.advance()

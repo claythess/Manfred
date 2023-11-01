@@ -1,5 +1,6 @@
 from Error import Error, Success
 from Tokens import *
+from Lexer import Token
 from copy import deepcopy
 
 import logging
@@ -10,12 +11,12 @@ class ParseRegister:
     def __init__(self, token_list):
         self.token_list = token_list
         self.position = 0
-    def current(self):
+    def current(self) -> Token:
         return self.token_list[self.position]
     
     def advance(self):
         self.position += 1
-    def next(self):
+    def next(self) -> Token:
         return self.token_list[self.position + 1]
 
 class AssignNode:
@@ -115,6 +116,9 @@ class Parser:
             return Error("SYNTAX ERROR", self.statement, "Expected Variable ID",
                          self.register.current().position)
         id_tok = self.register.current()
+        if id_tok.data in BUILT_IN_FUNCTIONS.keys():
+            return Error("PARSER ERROR", self.register.statement,
+                         f"{id_tok.data} exists as Built-In variable", self.register.place())
         self.register.advance()
         
         if not self.register.current().matches(TT_EQ):
@@ -123,12 +127,15 @@ class Parser:
         self.register.advance()
         
         expr = self.visit_expr()
+        if not self.register.current().matches(TT_END):
+            logger.warn("Expected End of line token")
         if type(expr) is Error:
             return expr
         
         return AssignNode(id_tok, expr)
     
     def visit_expr(self, paren = 0):
+        logger.debug("Enter w Paren " + str(paren))
         if self.register.current().matches(TT_END):
             return Error("PARSER ERROR", self.statement, "Unexpected end of statement", self.register.current().position)
         if self.register.current().matches(TT_LPAREN):
@@ -156,7 +163,7 @@ class Parser:
                 node1 = ValueNode(tok1)
         else:
             return Error("SYNTAX ERROR", self.statement, 
-                         "Unexpected Error", self.register.current().position)
+                         f"Unexpected character", self.register.current().position)
         if self.register.next().matches_any(TT_END, TT_RPAREN):
                 self.register.advance()
                 return node1
@@ -166,10 +173,11 @@ class Parser:
         if self.register.current().matches_any(TT_ADD, TT_SUB, TT_MUL, TT_DIV):
             op = self.register.current()
             self.register.advance()
-            node2 = self.visit_expr()
+            node2 = self.visit_expr(paren=paren)
             
             if type(node2) is Error:
                 return node2
+            logger.debug("Create binop w paren" + str(paren))
             out = BinOpNode(node1, node2, op, paren)
             
             return out
@@ -214,7 +222,7 @@ class Parser:
             r_op = deepcopy(node.right.operation)
             #logger.debug("OP -> " + op.__repr__())
             #logger.debug("ROP -> " + r_op.__repr__())
-            out = BinOpNode(BinOpNode(lnode, r_lnode, op, node.right.paren), r_rnode, r_op, node.paren)
+            out = BinOpNode(BinOpNode(lnode, r_lnode, op, node.paren), r_rnode, r_op, node.right.paren)
             if type(out.right) is BinOpNode:
                 out.right = self.pemdas(out.right)
             if type(out.left) is BinOpNode:
