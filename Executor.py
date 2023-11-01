@@ -11,7 +11,16 @@ from pybaseball import pitching_stats, batting_stats
 from pybaseball import cache
 cache.enable()
 
+from colorama import init; init()
+from colorama import Fore
 
+COLOR_THEMES = {
+    "default":[Fore.LIGHTWHITE_EX, Fore.LIGHTBLACK_EX],
+    "eggshell":[Fore.LIGHTWHITE_EX, Fore.LIGHTYELLOW_EX],
+    "wine":[Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX],
+    "oceanic":[Fore.LIGHTCYAN_EX, Fore.LIGHTBLUE_EX, Fore.BLUE],
+    "night":[Fore.LIGHTBLACK_EX, Fore.LIGHTMAGENTA_EX, Fore.MAGENTA]
+}
 
 def left_justify(text, length):
     if len(text) < length:
@@ -75,9 +84,16 @@ class Executor:
         self.output_node = output_node
         self.statement = statement
     
-    def execute(self, context):
+    def execute(self, context, output_color):
+        logger.debug("OUT COLOR " + str(output_color))
+        if output_color:
+            if output_color in COLOR_THEMES.keys():
+                output_color = COLOR_THEMES[output_color]
+            else:
+                output_color = COLOR_THEMES["default"]
         from_y = int(self.output_node.from_year.data)
         to_y   = int(self.output_node.to_year.data)
+        
         if self.output_node.output_type.data == "batting":
             data=batting_stats(from_y, to_y, qual = 1)
         elif self.output_node.output_type.data == "qbatting":
@@ -153,6 +169,9 @@ class Executor:
         logger.debug(count)
 
         # Generate lengths for each column, and output headers
+        color_idx = 0
+        if output_color: print(output_color[0], end="")
+            
         key_len = []
         for key in out_data[0].keys():
             max_len = 0
@@ -165,9 +184,12 @@ class Executor:
             key_len.append(max(max_len, len(key)))
             print(left_justify(key, key_len[-1]),end=" | ")
         print()
-
+        
+        
         for i in range(len(out_data[0].keys())):
             print("-" * key_len[i],end="-|-")
+            
+        if output_color: print(Fore.RESET, end="")
         print()
         logger.debug(key_len)
         
@@ -178,15 +200,24 @@ class Executor:
         out_data.sort(key=lambda x: x[self.output_node.sort_stat.data], reverse=reverse)
         logger.debug(len(out_data))
         # Outuput Actual data
+        
         for i in range(int(self.output_node.num.data)):
             if i >= len(out_data):
                 break
+            
+            
+            if output_color: 
+                color_idx += 1
+                color_idx = color_idx % len(output_color)
+                print(output_color[color_idx], end="")
+            
             stats = out_data[i]
             for k, i in zip(key_len, stats.values()):
                 if type(i) is float:
                     i = round(i, 4)
                 print(left_justify(str(i), k), end = " | ")
             print()
+            if output_color: print(Fore.RESET, end="")
             
 if __name__ == "__main__":
     tmp = pitching_stats(2023,2023)

@@ -20,7 +20,7 @@ class Environment:
     def __init__(self):
         self.context = {} # Dictionary of variables
     
-    def evaluate_statement(self, statement):
+    def evaluate_statement(self, statement, color):
         # Jerry Rig Comments
         if statement.startswith('#') or len(statement.strip()) == 0:
             return Success()
@@ -39,14 +39,14 @@ class Environment:
             self.context[out.id_tok.data] = out.value_node
         if type(out) is OutputNode:
             executor = Executor(out, statement)
-            out = executor.execute(self.context)
+            out = executor.execute(self.context, color)
             if type(out) == Error:
                 return out
         
         return Success()
         
 
-def REPL():
+def REPL(color):
     env = Environment()
     success = True
     while True:
@@ -60,7 +60,7 @@ def REPL():
         if tmp == "q":
             break
         
-        result = env.evaluate_statement(tmp)
+        result = env.evaluate_statement(tmp, color)
         if type(result) is Error:
             success = False
             result.output()
@@ -78,6 +78,7 @@ if __name__ == "__main__":
     
     parser.add_argument('-d', "--debug", action="store_true", help="Debug Info")
     
+    parser.add_argument('-c', "--color",nargs='?',default="", const="default", action="store", help="Output in color")
     
     args = parser.parse_args()
     if args.debug:
@@ -86,12 +87,12 @@ if __name__ == "__main__":
         logger.setLevel(logging.INFO)
         
     if args.repl:
-        REPL()
+        REPL(args.color)
     elif args.file:
         env = Environment()
         statements = open(args.file,'r').read().splitlines()
         for s in statements:
-            result = env.evaluate_statement(s)
+            result = env.evaluate_statement(s, args.color)
             if type(result) is Error:
                 result.output()
                 break
