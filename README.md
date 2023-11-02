@@ -33,6 +33,10 @@ where color is "default", "night", "wine", "eggshell", "oceanic", "forest", or "
 
 Do feel free to add your own themes in the Manfred/Executor.py file
 
+I should note I encountered a bug where stats that obviously exist, like 'Name' were being reported as not existing, 
+the solution I found to this (without much looking) was updating all your site packages, which is a bit nuclear, but at least a fix.
+https://www.activestate.com/resources/quick-reads/how-to-update-all-python-packages/
+
 ## Stat creation
 ```
 let new_stat = ERA - SO * IP
