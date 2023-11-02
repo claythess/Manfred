@@ -1,4 +1,4 @@
-from Error import Error, Success
+from Manfred.Error import Error, Success
 import logging
 import logging
 logging.basicConfig()
@@ -9,7 +9,7 @@ ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
 NUMBERS  = "1234567890"
 ALPHABET_SECONDARY = NUMBERS + "%"
 
-from Tokens import *
+from Manfred.Tokens import *
 
 symbol_table = {'[':TT_LBRACK,
                 ']':TT_RBRACK,

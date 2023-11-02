@@ -1,7 +1,7 @@
-from Error import Error, Success
-from Tokens import *
-from Parser import ValueNode, BinOpNode, UnOpNode, CompareNode
-from Lexer import Token
+from Manfred.Error import Error, Success
+from Manfred.Tokens import *
+from Manfred.Parser import ValueNode, BinOpNode, UnOpNode, CompareNode
+from Manfred.Lexer import Token
 
 import logging
 logging.basicConfig()

@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-from Error import Error, Success
-from Lexer import Lexer
-from Parser import Parser, OutputNode, AssignNode
-from Executor import Executor
+from Manfred.Error import Error, Success
+from Manfred.Lexer import Lexer
+from Manfred.Parser import Parser, OutputNode, AssignNode
+from Manfred.Executor import Executor
 
 import logging
 logging.basicConfig()

@@ -1,6 +1,6 @@
-from Error import Error, Success
-from Tokens import *
-from Lexer import Token
+from Manfred.Error import Error, Success
+from Manfred.Tokens import *
+from Manfred.Lexer import Token
 from copy import deepcopy
 
 import logging
