@@ -14,7 +14,11 @@ To run file, e.g. TTO.txt
 ```
 python3 manfred.py -f TTO.txt
 ```
-
+To run mafnred with colored output
+```
+python3 manfred -r -c {color}
+```
+where color is "default", "night", "wine", "eggshell", "oceanic". If no value is supplied, -c will use the "default" color theme
 
 ## Stat creation
 ```
@@ -41,6 +45,11 @@ show output_type [year] (PARAM1, PARAM2, PARAM3) PARAM2 < 5, PARAM3 = VALUE, top
 ```
 PARAM3 here can compare any attribute to be less than, greater than, or equal to a value. These can be chained together by seperating conditions with a comma
 
+One can also use builtin variable lists "basic" and "statcast"
+```
+show pitching [2020] (Name, basic) Team = CHW, bot 5 ERA
+show abatting [2020, 2022] (Season, Name, statcast) top 10 "wRC+"
+```
 ## E.g.
 ```
 let esoteric_pitching = IP - (HR * 13) - (BB * 3) + (SO * 5)
