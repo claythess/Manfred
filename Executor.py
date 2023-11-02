@@ -160,7 +160,12 @@ class Executor:
                 if p.data in data.columns:
                     tmp[p.data] = r[p.data]
                 elif p.data in context.keys():
-                    val = v.visit(context[p.data])
+                    # Coding gods forgive me for using a try statement
+                    try:
+                        val = v.visit(context[p.data])
+                    except KeyError:
+                        return Error("EXECUTION ERROR", self.statement,
+                                     f"Invalid result for {p.data}, check if parameters exist", p.position)
                     if type(val) is float:
                         val = round(val, 4)
                     tmp[p.data] = val
