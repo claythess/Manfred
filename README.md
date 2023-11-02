@@ -18,7 +18,9 @@ To run mafnred with colored output
 ```
 python3 manfred -r -c {color}
 ```
-where color is "default", "night", "wine", "eggshell", "oceanic". If no value is supplied, -c will use the "default" color theme
+where color is "default", "night", "wine", "eggshell", "oceanic", "forest", or "america". If no value is supplied, -c will use the "default" color theme
+
+Do feel free to add your own themes in the Manfred/Executor.py file
 
 ## Stat creation
 ```

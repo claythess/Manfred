@@ -18,8 +18,10 @@ COLOR_THEMES = {
     "default":[Fore.LIGHTWHITE_EX, Fore.LIGHTBLACK_EX],
     "eggshell":[Fore.LIGHTWHITE_EX, Fore.LIGHTYELLOW_EX],
     "wine":[Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX],
-    "oceanic":[Fore.LIGHTCYAN_EX, Fore.LIGHTBLUE_EX, Fore.BLUE],
-    "night":[Fore.LIGHTBLACK_EX, Fore.LIGHTMAGENTA_EX, Fore.MAGENTA]
+    "oceanic":[Fore.LIGHTCYAN_EX, Fore.LIGHTBLUE_EX, Fore.CYAN, Fore.BLUE],
+    "night":[Fore.LIGHTBLACK_EX, Fore.LIGHTMAGENTA_EX, Fore.MAGENTA],
+    "forest":[Fore.LIGHTGREEN_EX, Fore.GREEN, Fore.LIGHTBLACK_EX],
+    "america":[Fore.LIGHTWHITE_EX, Fore.RED, Fore.LIGHTBLUE_EX]
 }
 
 def left_justify(text, length):
