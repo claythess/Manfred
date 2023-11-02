@@ -3,6 +3,17 @@ Meta Analytics Network, Full Reference Esoteric Database
 
 This allows for seamless creation of esoteric stats, and allows one to quickly generate leaderboards for new and existing stats
 
+# Installation
+
+Install repo w/ Git:
+```
+git clone git@github.com:claythess/Manfred.git
+```
+Install dependencies
+```
+pip install -r requirements.txt
+```
+
 # Usage
 
 ## Running manfred.py
