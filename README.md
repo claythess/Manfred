@@ -33,6 +33,8 @@ where color is "default", "night", "wine", "eggshell", "oceanic", "forest", or "
 
 Do feel free to add your own themes in the Manfred/Executor.py file
 
+## Notes from teh author
+
 The first time you retrieve data for any given year, expect a delay, as the database is downloading. Data caching is builtin, so subsequent queries will be much faster
 
 I should note I encountered a bug where stats that obviously exist, like 'Name' were being reported as not existing, 
